@@ -5,6 +5,8 @@ from tensorflow.keras.models import Sequential
 
 import cv2 as cv
 
+face_cascade = cv.CascadeClassifier(cv.data.harrcascade + 'haarcascade_frontalface_default.xml')
+
 # getting camera
 cap = cv.VideoCapture(0)
 
@@ -26,7 +28,11 @@ while True:
 	# 2 windows "mirrored"
 	# combined_window = np.hstack([gray, gray_flip])
 
-	cv.imshow('frame', gray_flip)
+	faces = face_cascade.detectMultiScale(gray_flip, 1.3, 5)
+	for (x, y, w, h) in faces:
+		frame = cv.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 3)
+
+	cv.imshow('frame', frame)
 
 	# listening for exit key which is 'q'
 	if cv.waitKey(1) == ord('q'):
