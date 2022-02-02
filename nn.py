@@ -7,9 +7,12 @@ nnfs.init()
 from nnfs.datasets import spiral_data
 from layers import Dense
 from activation_functions import ReLU, Softmax
-from loss import CategoricalCrossentropy
+from loss import CategoricalCrossentropy, MSE
 
 X, y = spiral_data(samples=100, classes=3)
+
+print(X.shape)
+print(y.shape)
 
 dense1 = Dense(2, 3)
 activation1 = ReLU()
@@ -22,4 +25,7 @@ activation2.forward(dense2.output)
 print(activation2.output[:5])
 loss = CategoricalCrossentropy()
 loss_value = loss.calculate(activation2.output, y)
-print(loss_value)
+print('Categorical Crossentropy Loss:', loss_value)
+mse_loss = MSE()
+mse_loss_value = mse_loss.calculate(activation2.output, y)
+print('MSE Loss:', loss_value)

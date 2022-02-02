@@ -1,11 +1,15 @@
 import numpy as np
 
 class ReLU:
+    def __init__(self):
+        self.output = None
 
     def forward(self, inputs):
         self.output = np.maximum(0, inputs)
 
 class Softmax:
+    def __init__(self):
+        self.output = None
 
     def forward(self, inputs):
         # exponentiate input values

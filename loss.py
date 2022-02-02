@@ -1,13 +1,13 @@
 import numpy as np
 
-class Loss:
 
+class Loss:
     def calculate(self, output, y):
         sample_losses = self.forward(output, y)
         return np.mean(sample_losses)
 
-class CategoricalCrossentropy(Loss):
 
+class CategoricalCrossentropy(Loss):
     def forward(self, y_pred, y_true):
         n_samples = len(y_pred)
 
@@ -21,3 +21,7 @@ class CategoricalCrossentropy(Loss):
             correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
 
         return -np.log(correct_confidences)
+
+class MSE(Loss):
+    def forward(self, y_pred, y_true):
+        return np.power(y_pred - y_true, 2)
