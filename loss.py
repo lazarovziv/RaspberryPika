@@ -1,14 +1,12 @@
 import numpy as np
 
 
-class Loss:
-    def calculate(self, output, y):
-        sample_losses = self.forward(output, y)
-        return np.mean(sample_losses)
+class CategoricalCrossentropy:
+    def __init__(self):
+        self.d_inputs = None
 
-
-class CategoricalCrossentropy(Loss):
     def forward(self, y_pred, y_true):
+        global correct_confidences
         n_samples = len(y_pred)
 
         # clipping data to prevent division by 0
@@ -22,6 +20,15 @@ class CategoricalCrossentropy(Loss):
 
         return -np.log(correct_confidences)
 
-class MSE(Loss):
-    def forward(self, y_pred, y_true):
-        return np.power(y_pred - y_true, 2)
+    def backward(self, d_values, y_true):
+        samples = len(d_values)
+        labels = len(d_values[0])
+
+        # turn labels into one-hot vectors
+        if len(y_true.shape) == 1:
+            y_true = np.eye(labels)[y_true]
+
+        # calculate gradient
+        self.d_inputs = -y_true / d_values
+        # normalize
+        self.d_inputs = self.d_inputs / samples
