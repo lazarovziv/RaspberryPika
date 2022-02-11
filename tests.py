@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from activation_functions import Softmax, ReLU
 from layers import Dense
 from loss import CategoricalCrossentropy
@@ -16,6 +18,9 @@ loss = CategoricalCrossentropy()
 
 optimizer = SGD()
 
+loss_graph_values = []
+accuracy_graph_values = []
+
 for epoch in range(10001):
     dense1.forward(X)
     activation1.forward(dense1.output)
@@ -28,10 +33,23 @@ for epoch in range(10001):
         y = np.argmax(y, axis=1)
     accuracy = np.mean(predictions == y)
 
-    if not epoch % 500:
+    if not epoch % 100:
         print(f'epoch: {epoch}')
         print(f'loss: {loss_value.mean()}')
         print(f'accuracy: {accuracy}')
+
+        loss_graph_values.append(loss_value.mean())
+        accuracy_graph_values.append(accuracy)
+
+        plt.plot(loss_graph_values, label='Loss', color='blue')
+        plt.plot(accuracy_graph_values, label='Accuracy', color='red')
+        plt.xlabel('Epoch')
+        plt.ylabel('Acc')
+
+        handles, labels = plt.gca().get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        plt.legend(by_label.values(), by_label.keys())
+        plt.pause(0.05)
 
     # backpropagation
     loss.backward(activation2.output, y)
@@ -43,3 +61,5 @@ for epoch in range(10001):
     # update weights and biases
     optimizer.optimize(dense1)
     optimizer.optimize(dense2)
+
+plt.show()
