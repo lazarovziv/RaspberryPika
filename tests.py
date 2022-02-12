@@ -16,7 +16,7 @@ dense2 = Dense(64, 3)
 activation2 = Softmax()
 loss = CategoricalCrossentropy()
 
-optimizer = SGD()
+optimizer = SGD(learning_rate=0.85, decay=1e-3)
 
 loss_graph_values = []
 accuracy_graph_values = []
@@ -35,16 +35,17 @@ for epoch in range(10001):
 
     if not epoch % 100:
         print(f'epoch: {epoch}')
-        print(f'loss: {loss_value.mean()}')
-        print(f'accuracy: {accuracy}')
+        print(f'loss: {loss_value.mean():.3f}')
+        print(f'accuracy: {accuracy:.3f}')
+        print(f'lr: {optimizer.current_learning_rate}')
+        print('---------------')
 
         loss_graph_values.append(loss_value.mean())
         accuracy_graph_values.append(accuracy)
 
         plt.plot(loss_graph_values, label='Loss', color='blue')
         plt.plot(accuracy_graph_values, label='Accuracy', color='red')
-        plt.xlabel('Epoch')
-        plt.ylabel('Acc')
+        plt.xlabel('Epoch x 100')
 
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
@@ -58,8 +59,12 @@ for epoch in range(10001):
     activation1.backward(dense2.d_inputs)
     dense1.backward(activation1.d_inputs)
 
+    # update learning rate
+    optimizer.pre_optimize()
     # update weights and biases
     optimizer.optimize(dense1)
     optimizer.optimize(dense2)
+    # increment iterations
+    optimizer.post_optimize()
 
 plt.show()
