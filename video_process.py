@@ -56,3 +56,5 @@ cap.release()
 cv.destroyAllWindows()
 
 frame = frame.reshape(720*1280, 3)
+
+# use POST request from server uploading image and label

@@ -1,15 +1,14 @@
 import numpy as np
 
 
-class Dense():
+class Dense:
     def __init__(self, n_inputs, n_neurons):
         # initialize weights and biases
         # setting shape as (n_inputs, n_neurons) to prevent transposing every dot product call
         # super().__init__()
         self.output = None
         self.inputs = None
-        self.weights = 0.01 * np.random.randn(n_inputs,
-                                              n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
+        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
         self.biases = np.zeros((1, n_neurons))
 
         self.d_inputs = None

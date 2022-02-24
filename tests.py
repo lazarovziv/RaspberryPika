@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+# from matplotlib.animation import FuncAnimation
 from activation_functions import Softmax, ReLU
 from layers import Dense
 from loss import CategoricalCrossentropy
 from optimizers import SGD
 import nnfs
 from nnfs.datasets import spiral_data
+
+nnfs.init()
 
 X, y = spiral_data(samples=100, classes=3)
 
@@ -16,7 +18,7 @@ dense2 = Dense(64, 3)
 activation2 = Softmax()
 loss = CategoricalCrossentropy()
 
-optimizer = SGD(learning_rate=0.85, decay=1e-3)
+optimizer = SGD(decay=1e-3, momentum=0.9)
 
 loss_graph_values = []
 accuracy_graph_values = []
@@ -33,7 +35,7 @@ for epoch in range(10001):
         y = np.argmax(y, axis=1)
     accuracy = np.mean(predictions == y)
 
-    if not epoch % 100:
+    if not epoch % 500:
         print(f'epoch: {epoch}')
         print(f'loss: {loss_value.mean():.3f}')
         print(f'accuracy: {accuracy:.3f}')
