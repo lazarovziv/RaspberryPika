@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from activation_functions import Softmax, ReLU
 from layers import Dense
 from loss import CategoricalCrossentropy
-from optimizers import SGD
+from optimizers import *
 import nnfs
 from nnfs.datasets import spiral_data
 
@@ -12,13 +12,18 @@ nnfs.init()
 
 X, y = spiral_data(samples=100, classes=3)
 
+colors_y = {0: 'blue', 1: 'red', 2: 'green'}
+
 dense1 = Dense(2, 64)
 activation1 = ReLU()
 dense2 = Dense(64, 3)
 activation2 = Softmax()
 loss = CategoricalCrossentropy()
 
-optimizer = SGD(decay=1e-3, momentum=0.9)
+# optimizer = SGD(decay=1e-3, momentum=0.9)
+# optimizer = AdaGrad(decay=1e-4)
+# optimizer = RMSProp(learning_rate=0.02, decay=1e-5, rho=0.999)
+optimizer = Adam(learning_rate=0.02, decay=1e-5)
 
 loss_graph_values = []
 accuracy_graph_values = []
@@ -42,6 +47,8 @@ for epoch in range(10001):
         print(f'lr: {optimizer.current_learning_rate}')
         print('---------------')
 
+        # plotting accuracy and loss values over time
+        """
         loss_graph_values.append(loss_value.mean())
         accuracy_graph_values.append(accuracy)
 
@@ -53,6 +60,7 @@ for epoch in range(10001):
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys())
         plt.pause(0.05)
+        """
 
     # backpropagation
     loss.backward(activation2.output, y)
@@ -69,4 +77,4 @@ for epoch in range(10001):
     # increment iterations
     optimizer.post_optimize()
 
-plt.show()
+# plt.show()
