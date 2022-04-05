@@ -54,19 +54,19 @@ class AdaGrad:
     def optimize(self, layer):
         # if layer doesn't contain cache arrays, create with zeros
         if not hasattr(layer, 'weights_cache'):
-            # layer.weights_cache = np.ones_like(layer.weights)
-            layer.weights_cache = np.full(shape=layer.weights.shape, fill_value=0.1)
-            # layer.biases_cache = np.ones_like(layer.biases)
-            layer.biases_cache = np.full(shape=layer.biases.shape, fill_value=0.1)
+            layer.weights_cache = np.zeros_like(layer.weights)
+            # layer.weights_cache = np.full_like(shape=layer.weights.shape, fill_value=0.1)
+            layer.biases_cache = np.zeros_like(layer.biases)
+            # layer.biases_cache = np.full_like(shape=layer.biases.shape, fill_value=0.1)
 
         # update cache with squared current gradients
-        layer.weights_cache += np.power(layer.d_weights, 2)
-        layer.biases_cache += np.power(layer.d_biases, 2)
+        layer.weights_cache = layer.weights_cache + np.power(layer.d_weights, 2)
+        layer.biases_cache = layer.biases_cache + np.power(layer.d_biases, 2)
 
         # SGD update pattern and normalization with square rooted cache
-        layer.weights += -self.current_learning_rate * layer.d_weights / (
+        layer.weights = layer.weights + -self.current_learning_rate * layer.d_weights / (
                 np.sqrt(layer.weights_cache) + self.epsilon)
-        layer.biases += -self.current_learning_rate * layer.d_biases / (
+        layer.biases = layer.biases + -self.current_learning_rate * layer.d_biases / (
                 np.sqrt(layer.biases_cache) + self.epsilon)
 
     def post_optimize(self):
@@ -89,16 +89,16 @@ class RMSProp:
 
     def optimize(self, layer):
         if not hasattr(layer, 'weights_cache'):
-            # layer.weights_cache = np.ones_like(layer.weights)
-            layer.weights_cache = np.full(shape=layer.weights.shape, fill_value=0.1)
-            # layer.biases_cache = np.ones_like(layer.biases)
-            layer.biases_cache = np.full(shape=layer.biases.shape, fill_value=0.1)
+            layer.weights_cache = np.zeros_like(layer.weights)
+            # layer.weights_cache = np.full(shape=layer.weights.shape, fill_value=0.1)
+            layer.biases_cache = np.zeros_like(layer.biases)
+            # layer.biases_cache = np.full(shape=layer.biases.shape, fill_value=0.1)
 
         layer.weights_cache = self.rho * layer.weights_cache + (1 - self.rho) * np.power(layer.d_weights, 2)
         layer.biases_cache = self.rho * layer.biases_cache + (1 - self.rho) * np.power(layer.d_biases, 2)
 
-        layer.weights += -self.current_learning_rate * layer.d_weights / (np.sqrt(layer.weights_cache) + self.epsilon)
-        layer.biases += -self.current_learning_rate * layer.d_biases / (np.sqrt(layer.biases_cache) + self.epsilon)
+        layer.weights = layer.weights + -self.current_learning_rate * layer.d_weights / (np.sqrt(layer.weights_cache) + self.epsilon)
+        layer.biases = layer.biases + -self.current_learning_rate * layer.d_biases / (np.sqrt(layer.biases_cache) + self.epsilon)
 
     def post_optimize(self):
         self.iterations += 1
@@ -121,23 +121,22 @@ class Adam:
 
     def optimize(self, layer):
         if not hasattr(layer, 'weights_cache'):
-            # layer.weights_momentum = np.zeros_like(layer.weights)
-            # layer.weights_cache = np.zeros_like(layer.weights)
-            layer.weights_momentum = np.full(shape=layer.weights.shape, fill_value=0.1)
-            layer.weights_cache = np.full(shape=layer.weights.shape, fill_value=0.1)
+            layer.weights_momentum = np.zeros_like(layer.weights)
+            layer.weights_cache = np.zeros_like(layer.weights)
+            # layer.weights_momentum = np.full(shape=layer.weights.shape, fill_value=0.1)
+            # layer.weights_cache = np.full(shape=layer.weights.shape, fill_value=0.1)
 
-            # layer.biases_momentum = np.zeros_like(layer.biases)
-            # layer.biases_cache = np.zeros_like(layer.biases)
-            layer.biases_momentum = np.full(shape=layer.biases.shape, fill_value=0.1)
-            layer.biases_cache = np.full(shape=layer.biases.shape, fill_value=0.1)
+            layer.biases_momentum = np.zeros_like(layer.biases)
+            layer.biases_cache = np.zeros_like(layer.biases)
+            # layer.biases_momentum = np.full(shape=layer.biases.shape, fill_value=0.1)
+            # layer.biases_cache = np.full(shape=layer.biases.shape, fill_value=0.1)
 
         # update momentum with the gradients
         layer.weights_momentum = self.beta_1 * layer.weights_momentum + (1 - self.beta_1) * layer.d_weights
-        layer.biases_momentum = self.beta_1 + layer.biases_momentum + (1 - self.beta_1) * layer.d_biases
+        layer.biases_momentum = self.beta_1 * layer.biases_momentum + (1 - self.beta_1) * layer.d_biases
 
         # corrected momentum
-        weight_momentum_corrected = layer.weights_momentum / (
-                    1 - self.beta_1 ** (self.iterations + 1))  # prevent power by 0
+        weight_momentum_corrected = layer.weights_momentum / (1 - self.beta_1 ** (self.iterations + 1))  # prevent power by 0
         bias_momentum_corrected = layer.biases_momentum / (1 - self.beta_1 ** (self.iterations + 1))
 
         # update cache with squared current gradients
@@ -148,9 +147,9 @@ class Adam:
         weight_cache_corrected = layer.weights_cache / (1 - self.beta_2 ** (self.iterations + 1))
         bias_cache_corrected = layer.biases_cache / (1 - self.beta_2 ** (self.iterations + 1))
 
-        layer.weights += -self.current_learning_rate * weight_momentum_corrected / (
+        layer.weights = layer.weights + -self.current_learning_rate * weight_momentum_corrected / (
                     np.sqrt(weight_cache_corrected) + self.epsilon)
-        layer.biases += -self.current_learning_rate * bias_momentum_corrected / (
+        layer.biases = layer.biases + -self.current_learning_rate * bias_momentum_corrected / (
                     np.sqrt(bias_cache_corrected) + self.epsilon)
 
     def post_optimize(self):
