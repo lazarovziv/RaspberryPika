@@ -9,6 +9,25 @@ class Loss:
         loss = np.mean(sample_losses)
         return loss
 
+    def regularization_loss(self, layer):
+        regularization_loss = 0  # default value
+        # l1 - weights
+        if layer.weight_regularizer_l1 > 0:
+            regularization_loss += layer.weight_regularizer_l1 * np.sum(np.abs(layer.weights))
+
+        # l2 - weights
+        if layer.weight_regularizer_l2 > 0:
+            regularization_loss += layer.weight_regularizer_l2 * np.sum(np.power(layer.weights, 2))
+
+        # l1 - biases
+        if layer.bias_regularizer_l1 > 0:
+            regularization_loss += layer.bias_regularizer_l1 * np.sum(np.abs(layer.biases))
+
+        # l2 - weights
+        if layer.bias_regularizer_l2 > 0:
+            regularization_loss += layer.bias_regularizer_l2 * np.sum(np.power(layer.biases, 2))
+
+        return regularization_loss
 
 class CategoricalCrossentropy(Loss):
 
