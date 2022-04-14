@@ -89,3 +89,26 @@ class SoftmaxCategoricalCrossentropy(Loss):
         self.d_inputs[range(samples), y_true] -= 1
         # normalize it
         self.d_inputs = self.d_inputs / samples
+
+
+class BinaryCrossEntropy(Loss):
+
+    def __init__(self):
+        self.d_inputs = None
+
+    def forward(self, y_pred, y_true):
+        # clipping to prevent division by zero
+        y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
+        sample_losses = -(y_true * np.log(y_pred_clipped) + (1 - y_true) * np.log(1 - y_pred_clipped))
+        return np.mean(sample_losses, axis=1)
+
+    def backward(self, d_values, y_true):
+        samples = len(d_values)
+        outputs = len(d_values[0])
+
+        # clipping to prevent division by zero
+        clipped_values = np.clip(d_values, 1e-7, 1 - 1e-7)
+        # gradients
+        self.d_inputs = -(y_true / clipped_values - (1 - y_true) / (1 - clipped_values)) / outputs
+        # normalize gradient
+        self.d_inputs = self.d_inputs / samples
