@@ -9,6 +9,8 @@ class Model:
     def __init__(self):
         self.layers = []
         self.softmax_classifier_output = None
+        self.accuracy_graph = {}
+        self.loss_graph = {}
 
     def add(self, layer):
         self.layers.append(layer)
@@ -41,6 +43,10 @@ class Model:
                 print(f'accuracy: {accuracy:.3f}')
                 print(f'lr: {self.optimizer.current_learning_rate}')
                 print('---------------')
+
+                # add values to metrics' graphs for plotting
+                self.accuracy_graph[epoch] = accuracy
+                self.loss_graph[epoch] = loss
 
         if validation_data is not None:
             X_val, y_val = validation_data

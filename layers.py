@@ -15,7 +15,7 @@ class Dense:
         self.d_weights = None
 
         # initially multiplied by 0.01, but with glorot uniform it suited best to use 0.1
-        self.weights = 0.1 * np.random.randn(n_inputs, n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
+        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
         self.biases = np.zeros((1, n_neurons))
 
         self.weight_regularizer_l1 = weight_regularizer_l1

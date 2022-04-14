@@ -83,10 +83,10 @@ X_test, y_test = spiral_data(samples=100, classes=3)
 
 model = Model()
 
-model.add(Dense(2, 512, weight_regularizer_l2=5e-4, bias_regularizer_l2=5e-4))
+model.add(Dense(2, 256, weight_regularizer_l2=5e-4, bias_regularizer_l2=5e-4))
 model.add(Dropout(0.1))
 model.add(ReLU())
-model.add(Dense(512, 3))
+model.add(Dense(256, 3))
 model.add(Softmax())
 
 model.compile(
@@ -96,3 +96,7 @@ model.compile(
 )
 
 model.fit(X, y, epochs=10000, print_every=100, validation_data=(X_test, y_test))
+
+plt.plot(model.accuracy_graph.keys(), model.accuracy_graph.values(), label='Accuracy', color='red')
+plt.plot(model.loss_graph.keys(), model.loss_graph.values(), label='Loss', color='blue')
+plt.show()
