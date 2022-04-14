@@ -15,52 +15,107 @@ class Model:
     def add(self, layer):
         self.layers.append(layer)
 
-    def fit(self, X, y, *, epochs=1, print_every=1, validation_data=None):
+    def fit(self, X, y, *, epochs=1, batch_size=None, print_every=1, validation_data=None):
         # init accuracy
         self.accuracy.init(y)
 
-        for epoch in range(epochs + 1):
-            output = self.predict(X, training=True)
-
-            data_loss, regularization_loss = self.loss.calculate(output, y, include_regularization=True)
-            loss = data_loss + regularization_loss
-
-            predictions = self.output_layer_activation.predictions(output)
-            accuracy = self.accuracy.calculate(predictions, y)
-
-            self.backpropagate(output, y)
-
-            self.optimizer.pre_optimize()
-            for layer in self.trainable_layers:
-                self.optimizer.optimize(layer)
-            self.optimizer.post_optimize()
-
-            if not epoch % print_every:
-                print(f'epoch: {epoch}')
-                print(f'loss: {loss:.3f}')
-                print(f'data loss: {data_loss:.3f}')
-                print(f'regularization loss: {regularization_loss:.3f}')
-                print(f'accuracy: {accuracy:.3f}')
-                print(f'lr: {self.optimizer.current_learning_rate}')
-                print('---------------')
-
-                # add values to metrics' graphs for plotting
-                self.accuracy_graph[epoch] = accuracy
-                self.loss_graph[epoch] = loss
+        train_steps = 1
 
         if validation_data is not None:
+            validation_steps = 1
             X_val, y_val = validation_data
 
-            output = self.predict(X_val, training=False)
+        if batch_size is not None:
+            train_steps = len(X) // batch_size
 
-            loss = self.loss.calculate(output, y_val)
+            if train_steps * batch_size < len(X):
+                train_steps += 1
 
-            predictions = self.output_layer_activation.predictions(output)
-            accuracy = self.accuracy.calculate(predictions, y_val)
+            if validation_data is not None:
+                validation_steps = len(X_val) // batch_size
 
-            print(f'validation: ')
-            print(f'accuracy: {accuracy:.3f}')
-            print(f'loss: {loss:.3f}')
+                if validation_steps * batch_size < len(X_val):
+                    validation_steps += 1
+
+        # training loop
+        for epoch in range(epochs + 1):
+            print(f'epoch: {epoch+1}')
+            self.loss.new_pass()
+            self.accuracy.new_pass()
+
+            for step in range(train_steps):
+                # if batch_size wasn't specified, setting batch_size as entire dataset
+                if batch_size is None:
+                    batch_X = X
+                    batch_y = y
+                else:
+                    batch_X = X[step * batch_size:(step+1) * batch_size]
+                    batch_y = y[step * batch_size:(step+1) * batch_size]
+
+                output = self.predict(batch_X, training=True)
+
+                data_loss, regularization_loss = self.loss.calculate(output, batch_y, include_regularization=True)
+                loss = data_loss + regularization_loss
+
+                predictions = self.output_layer_activation.predictions(output)
+                accuracy = self.accuracy.calculate(predictions, batch_y)
+
+                self.backpropagate(output, batch_y)
+
+                self.optimizer.pre_optimize()
+                for layer in self.trainable_layers:
+                    self.optimizer.optimize(layer)
+                self.optimizer.post_optimize()
+
+                if not epoch % print_every or step == train_steps - 1:
+                    print(f'epoch: {epoch}')
+                    print(f'loss: {loss:.3f}')
+                    print(f'data loss: {data_loss:.3f}')
+                    print(f'regularization loss: {regularization_loss:.3f}')
+                    print(f'accuracy: {accuracy:.3f}')
+                    print(f'lr: {self.optimizer.current_learning_rate}')
+                    print('---------------')
+
+                    # add values to metrics' graphs for plotting
+                    self.accuracy_graph[epoch] = accuracy
+                    self.loss_graph[epoch] = loss
+
+            epoch_data_loss, epoch_regularization_loss = self.loss.calculate_accumulated(include_regularization=True)
+            epoch_loss = epoch_data_loss + epoch_regularization_loss
+            epoch_accuracy = self.accuracy.calculate_accumulated()
+
+            print('Training: ')
+            print(f'epoch accuracy: {epoch_accuracy:.3f}')
+            print(f'epoch loss: {epoch_loss:.3f}')
+            print(f'epoch data loss: {epoch_data_loss:.3f}')
+            print(f'epoch regularization loss: {epoch_regularization_loss:.3f}')
+            print(f'learning rate: {self.optimizer.current_learning_rate:.3f}')
+
+            if validation_data is not None:
+                self.loss.new_pass()
+                self.accuracy.new_pass()
+
+                for step in range(validation_steps):
+                    if batch_size is None:
+                        batch_X = X
+                        batch_y = y
+                    else:
+                        batch_X = X_val[step * batch_size:(step+1) * batch_size]
+                        batch_y = y_val[step * batch_size:(step+1) * batch_size]
+
+                    output = self.predict(batch_X, training=False)
+
+                    self.loss.calculate(output, batch_y)
+
+                    predictions = self.output_layer_activation.predictions(output)
+                    self.accuracy.calculate(predictions, batch_y)
+
+                validation_loss = self.loss.calculate_accumulated()
+                validation_accuracy = self.accuracy.calculate_accumulated()
+
+                print(f'validation: ')
+                print(f'accuracy: {validation_accuracy:.3f}')
+                print(f'loss: {validation_loss:.3f}')
 
     # needs to be called before fit() and after add()
     def compile(self, *, loss, optimizer, accuracy):
