@@ -113,7 +113,7 @@ class Model:
                 validation_loss = self.loss.calculate_accumulated()
                 validation_accuracy = self.accuracy.calculate_accumulated()
 
-                print(f'validation: ')
+                print(f'\nValidation: ')
                 print(f'accuracy: {validation_accuracy:.3f}')
                 print(f'loss: {validation_loss:.3f}')
 
