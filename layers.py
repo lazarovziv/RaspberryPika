@@ -54,3 +54,18 @@ class Dense:
             self.d_biases = self.d_biases + 2 * self.bias_regularizer_l2 * self.biases
 
         self.d_inputs = np.dot(d_values, self.weights.T)
+
+
+class Dropout:
+    def __init__(self, rate):
+        # rate parameter is like pytorch, percent to keep
+        self.rate = 1 - rate
+
+    def forward(self, inputs):
+        self.inputs = inputs
+        self.binary_mask = np.random.binomial(1, self.rate, size=inputs.shape) / self.rate
+
+        self.output = inputs * self.binary_mask
+
+    def backward(self, d_values):
+        self.d_inputs = d_values * self.binary_mask

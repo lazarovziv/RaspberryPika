@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 from activation_functions import Softmax, ReLU
-from layers import Dense
+from layers import *
 from loss import CategoricalCrossentropy, SoftmaxCategoricalCrossentropy
 from optimizers import *
 import nnfs
@@ -16,6 +16,7 @@ colors_y = {0: 'blue', 1: 'red', 2: 'green'}
 
 dense1 = Dense(2, 512, weight_regularizer_l2=5e-4, bias_regularizer_l2=5e-4)
 activation1 = ReLU()
+dropout1 = Dropout(0.1)
 dense2 = Dense(512, 3)
 loss_activation = SoftmaxCategoricalCrossentropy()
 
@@ -32,7 +33,8 @@ EPOCHS = 10000
 for epoch in range(EPOCHS+1):
     dense1.forward(X)
     activation1.forward(dense1.output)
-    dense2.forward(activation1.output)
+    dropout1.forward(activation1.output)
+    dense2.forward(dropout1.output)
     data_loss = loss_activation.forward(dense2.output, y)
     regularization_loss = loss_activation.loss.regularization_loss(dense1) + loss_activation.loss.regularization_loss(dense2)
     loss = data_loss + regularization_loss
@@ -67,7 +69,8 @@ for epoch in range(EPOCHS+1):
     # backpropagation (calculating gradients)
     loss_activation.backward(loss_activation.output, y)
     dense2.backward(loss_activation.d_inputs)
-    activation1.backward(dense2.d_inputs)
+    dropout1.backward(dense2.d_inputs)
+    activation1.backward(dropout1.d_inputs)
     dense1.backward(activation1.d_inputs)
 
     # update learning rate

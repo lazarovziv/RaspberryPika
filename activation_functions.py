@@ -30,3 +30,13 @@ class Softmax:
             jacobian_matrix = np.diagflat(output) - np.dot(output, output.T)
             # calculate gradient
             self.d_inputs[index] = np.dot(jacobian_matrix, d_value)
+
+
+class Sigmoid:
+
+    def forward(self, inputs):
+        self.inputs = inputs
+        self.output = 1 / (1 + np.exp(-inputs))
+
+    def backward(self, d_values):
+        self.d_inputs = d_values * (1 - self.output) * self.output
