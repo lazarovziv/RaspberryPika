@@ -1,1 +1,4 @@
 *.txt
+*.xml
+*.zip
+/fashion_mnist_images
