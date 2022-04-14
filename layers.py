@@ -14,7 +14,8 @@ class Dense:
         self.d_biases = None
         self.d_weights = None
 
-        self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
+        # initially multiplied by 0.01, but with glorot uniform it suited best to use 0.1
+        self.weights = 0.1 * np.random.randn(n_inputs, n_neurons)  # using np.random.randn to set random weights between -1, 1 keeping the mean close to 0
         self.biases = np.zeros((1, n_neurons))
 
         self.weight_regularizer_l1 = weight_regularizer_l1
@@ -22,7 +23,7 @@ class Dense:
         self.bias_regularizer_l1 = bias_regularizer_l1
         self.bias_regularizer_l2 = bias_regularizer_l2
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         # calculating outputs from inputs, weights and biases
         self.output = np.dot(inputs, self.weights) + self.biases
@@ -61,11 +62,22 @@ class Dropout:
         # rate parameter is like pytorch, percent to keep
         self.rate = 1 - rate
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
+
+        if not training:
+            self.output = inputs.copy()
+            return
+
         self.binary_mask = np.random.binomial(1, self.rate, size=inputs.shape) / self.rate
 
         self.output = inputs * self.binary_mask
 
     def backward(self, d_values):
         self.d_inputs = d_values * self.binary_mask
+
+
+class Input:
+
+    def forward(self, inputs, training):
+        self.output = inputs
